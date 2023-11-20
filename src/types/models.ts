@@ -1,11 +1,13 @@
 ﻿import {
+    IBloodPotencyData, IBloodRitual,
     IDiscipline,
-    IDisciplineAbility,
+    IDisciplineAbility, IOblivionCeremony,
     IPredatorType, IPTAction,
     ISkillSpreadType,
     ITrait,
     ITraitPack
 } from "@/types/data";
+import {ISectionatedCustomLexicon} from "@/types/custom-lexicon";
 
 export enum LevelType {
     Attribute,
@@ -14,7 +16,8 @@ export enum LevelType {
     ClanDiscipline,
     OtherDiscipline,
     Trait,
-    BloodPotency
+    BloodPotency,
+    CaitiffDiscipline
 }
 
 export enum CategoryKeys {
@@ -74,7 +77,15 @@ export enum Sex {
 export enum Generation {
     Children = "children",
     Newborn = "newborn",
-    Ancillae = "ancillae"
+    Ancillae = "ancillae",
+    Older = "older"
+}
+
+export enum DamageType {
+    None = "none",
+    Superficial = "superficial",
+    Heavy = "heavy",
+    Full = "full"
 }
 
 export const SortedSkillsAndAttribute = {
@@ -132,6 +143,11 @@ export function fillDefaults<T extends object>(given: T, defaults: T): T {
 export interface ILanguage {
     readonly key: string;
     readonly books: IBook[];
+    readonly bloodPotencyTable: IBloodPotencyData[];
+    readonly bloodRituals: IBloodRitual[];
+    readonly oblivionCeremonies: IOblivionCeremony[];
+    readonly customLexicon: ISectionatedCustomLexicon;
+    readonly items: IGroupItems[];
 }
 
 export interface IBook {
@@ -150,6 +166,7 @@ export interface IClan {
     readonly curse: string;
     readonly disciplines: IDiscipline[];
     readonly actions: IPTAction[];
+    symbol?: string;
 }
 
 export interface IUsingTraitPack {
@@ -188,7 +205,16 @@ export interface IRequiredPointSpread {
     packId: number;
 }
 
+export interface ICharacterDirectory {
+    id: string;
+    name: string;
+    open: boolean;
+}
+
+export const CurrentCharacterVersion = 1;
+
 export interface ICharacter {
+    directory?: string;
     id: string;
     avatar: string;
     requiredPointSpreads: IRequiredPointSpread[];
@@ -206,9 +232,12 @@ export interface ICharacter {
     generationEra: Generation;
     generation: number;
     health: number;
+    healthDamage?: DamageType[];
     willpower: number;
+    willpowerDamage?: DamageType[];
     hunger: number;
     humanity: number;
+    stains?: number;
     resonance: string;
     bloodPotency: number;
     skillspread: ISkillSpreadType;
@@ -220,6 +249,15 @@ export interface ICharacter {
     anchorsAndBeliefs: string;
     backstory: string;
     notes: string;
+    bloodRituals: IBloodRitual[];
+    oblivionCeremonies: IOblivionCeremony[];
+    useAdavancedDisciplines: boolean;
+    allowLearningOfAllPowers: boolean;
+    fullCustomization: boolean;
+    version: number;
+    inventory: IInventory;
+    usedExp: number;
+    connectedFoundryId?: string;
 }
 
 export interface ICategory {
@@ -239,9 +277,42 @@ export interface ISkillData {
     specialization: string[];
 }
 
+export interface IInventory {
+    carriedItems: IItemStack[];
+    ownedItems: IItemStack[];
+    bank: number;
+    cash: number;
+}
+
+export interface IItemStack {
+    item: IItem;
+    amount: number;
+}
+
+export interface IItem {
+    isCustom: boolean;
+    name: string;
+    description: string;
+    category: string;
+}
+
+export interface IGroupItems {
+    category: string;
+    items: IItem[];
+}
+
+export const DefaultDamageArray: () => DamageType[] = () => {
+    const arr: DamageType[] = [];
+    for (let i = 0; i < 10; i++) {
+        arr.push(DamageType.None);
+    }
+    return arr;
+};
+
 export const DefaultCharacter: () => ICharacter = () => ({
     id: "",
     requiredPointSpreads: [],
+    bloodRituals: [],
     ambition: "",
     avatar: "",
     bloodPotency: 0,
@@ -271,14 +342,17 @@ export const DefaultCharacter: () => ICharacter = () => ({
     generationEra: Generation.Children,
     generation: 0,
     health: 0,
+    healthDamage: DefaultDamageArray(),
     humanity: 7,
     hunger: 0,
     name: "",
+    stains: 0,
     predatorType: undefined!,
     skillspread: undefined!,
     resonance: "",
     sire: "",
     willpower: 0,
+    willpowerDamage: DefaultDamageArray(),
     sex: Sex.Divers,
     exp: 0,
     merits: {
@@ -287,8 +361,20 @@ export const DefaultCharacter: () => ICharacter = () => ({
     backgrounds: {
         packs: []
     },
+    oblivionCeremonies: [],
     chroniclePrinciples: "",
     anchorsAndBeliefs: "",
     backstory: "",
-    notes: ""
+    notes: "",
+    useAdavancedDisciplines: false,
+    allowLearningOfAllPowers: false,
+    fullCustomization: false,
+    version: CurrentCharacterVersion,
+    usedExp: 0,
+    inventory: {
+        carriedItems: [],
+        ownedItems: [],
+        cash: 0,
+        bank: 0
+    }
 });

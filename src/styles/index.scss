@@ -1,6 +1,6 @@
 ﻿:root {
   --primary-color: #8c0e2e !important;
-  --primary-color-light: #a91238 !important;
+  --primary-color-light: #be1640 !important;
   --primary-color-very-light: #f3c7cb !important;
   --primary-color-dark: #72152d !important;
   --primary-color-very-dark: #301923 !important;
@@ -49,4 +49,47 @@
   background-color: #8c0e2e;
   border-radius: 10px;
   border: 3px solid #8c0e2e;
+}
+
+.iconbtnprim {
+  cursor: pointer;
+  &:hover {
+    color: var(--primary-color);
+  }
+}
+
+.iconbtn {
+  border-radius: 3px;
+  padding: 0.5rem;
+  display: flex;
+  font-size: 1.2rem;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  &.loading {
+    animation: rotate 1s linear infinite;
+    cursor: not-allowed;
+  }
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  &:not(.loading):hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  &:not(.loading):active {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  &.active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }

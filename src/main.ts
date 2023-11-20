@@ -9,27 +9,43 @@ import '@/styles/index.scss'
 import {Backend} from "@/libs/backend";
 import {i18n} from "@/libs/i18n";
 import VueResizeText from 'vue-resize-text';
+import EventBus from "@/libs/event-bus";
+import VueInteractJs from "vue-interactjs";
+import {SettingsData} from "@/libs/io/settings";
+import {get} from "@/libs/io/rest";
 
 Vue.config.productionTip = false
 Vue.use(VueResizeText);
+// @ts-ignore
+Vue.use(VueInteractJs);
 
-function disableMenu() {
-    document.onkeydown = function (e) {
-        return (e.which || e.keyCode) != 116;
-    };
+function initializeDocumentEvents() {
+    if (process.env.NODE_ENV !== 'development') {
+        document.onkeydown = function (e) {
+            return (e.which || e.keyCode) != 116;
+        };
+    }
 
     document.addEventListener('contextmenu', e => {
-        e.preventDefault();
-        return false;
+        if (!SettingsData.isDevMode()) {
+            e.preventDefault();
+            return false;
+        }
     }, {capture: true})
 
     document.addEventListener('selectstart', e => {
-        e.preventDefault();
-        return false;
+        if (!SettingsData.isDevMode()) {
+            e.preventDefault();
+            return false;
+        }
     }, {capture: true})
+
+    window.onbeforeunload = function () {
+       EventBus.$emit("closing");
+    };
 }
 
-disableMenu();
+initializeDocumentEvents();
 
 Backend.initAsync().then(() => {
     new Vue({

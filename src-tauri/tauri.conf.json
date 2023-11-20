@@ -1,23 +1,31 @@
 {
-  "$schema": "..\\node_modules/@tauri-apps/cli\\schema.json",
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "",
-    "beforeDevCommand": "",
+    "beforeBuildCommand": "yarn build",
+    "beforeDevCommand": "yarn serve",
     "devPath": "Set automatically by Vue CLI plugin",
     "distDir": "Set automatically by Vue CLI plugin"
   },
   "package": {
     "productName": "Vicar",
-    "version": "0.1.0"
+    "version": "1.2.1"
   },
   "tauri": {
     "allowlist": {
-      "all": true
+      "fs": {
+        "all": true,
+        "scope": [
+          "$LOCALDATA/**"
+        ]
+      },
+      "path": {
+        "all": true
+      }
     },
     "bundle": {
       "active": true,
       "category": "DeveloperTool",
-      "copyright": "",
+      "copyright": "(c) 2023 VicarTeam",
       "deb": {
         "depends": []
       },
@@ -29,7 +37,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.github.vicarteam.vicar",
+      "identifier": "app.vicar.vicar",
       "longDescription": "",
       "macOS": {
         "entitlements": null,

@@ -70,6 +70,11 @@ const routes: Array<RouteConfig> = [
         component: () => import('@/views/viewer/ProfileView.vue')
       },
       {
+        path: 'inventory',
+        name: 'viewer-inventory',
+        component: () => import('@/views/viewer/InventoryView.vue')
+      },
+      {
         path: 'attributes',
         name: 'viewer-attributes',
         component: () => import('@/views/viewer/AttributesView.vue')
@@ -85,6 +90,11 @@ const routes: Array<RouteConfig> = [
         component: () => import('@/views/viewer/DisciplinesView.vue')
       },
       {
+        path: 'bloodrituals',
+        name: 'viewer-bloodrituals',
+        component: () => import('@/views/viewer/BloodRitualsView.vue')
+      },
+      {
         path: 'traits',
         name: 'viewer-traits',
         component: () => import('@/views/viewer/TraitsView.vue')
@@ -95,6 +105,18 @@ const routes: Array<RouteConfig> = [
         component: () => import('@/views/viewer/PdfView.vue')
       }
     ]
+  },
+  {
+    path: '/homebrew/discipline-editor/:disciplineId',
+    name: 'homebrew-discipline-editor',
+    props: true,
+    component: () => import('@/views/homebrew/DisciplineEditorView.vue')
+  },
+  {
+    path: '/homebrew/clan-editor/:clanId',
+    name: 'homebrew-clan-editor',
+    props: true,
+    component: () => import('@/views/homebrew/ClanEditorView.vue')
   }
 ]
 

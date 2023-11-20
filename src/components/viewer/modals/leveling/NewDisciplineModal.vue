@@ -19,12 +19,12 @@
 import {Component, Ref, Vue} from "vue-property-decorator";
 import Modal from "@/components/modal/Modal.vue";
 import {State} from "vuex-class";
-import {IAttributeData, ICharacter, ILeveledDisciplineAbility} from "@/types/models";
+import {IAttributeData, ICharacter, IDisciplineSelection, ILeveledDisciplineAbility} from "@/types/models";
 import {levelResolver} from "@/libs/resolvers/level-resolver";
 import Bullet from "@/components/Bullet.vue";
 import CharacterStorage from "@/libs/io/character-storage";
 import {IDiscipline} from "@/types/data";
-import DataManager from "@/libs/data-manager";
+import DataManager from "@/libs/data/data-manager";
 import ChooseDisciplineAbilityModal from "@/components/editor/modals/ChooseDisciplineAbilityModal.vue";
 
 @Component({
@@ -68,12 +68,16 @@ export default class NewDisciplineModal extends Vue {
       return;
     }
 
+    this.editingCharacter.usedExp = (this.editingCharacter.usedExp || 0) + this.neededExp;
     this.editingCharacter.exp -= this.neededExp;
     this.editingCharacter.disciplines.push({
       discipline: this.discipline,
       currentLevel: 2,
       points: 0,
       abilities: [this.ability]
+    });
+    this.editingCharacter.disciplines = this.editingCharacter.disciplines.sort((a, b) => {
+      return b.currentLevel - a.currentLevel;
     });
     CharacterStorage.saveCharacter(this.editingCharacter);
     this.show = false;
@@ -98,6 +102,15 @@ export default class NewDisciplineModal extends Vue {
   private get neededExp(): number {
     if (!this.discipline) {
       return Infinity;
+    }
+
+    if (this.editingCharacter.clan.id === 15) {
+      return levelResolver.resolveCaitiffDiscipline(this.editingCharacter, {
+        discipline: this.discipline,
+        points: 0,
+        currentLevel: 1,
+        abilities: []
+      });
     }
 
     return (DataManager.isClanDiscipline(this.editingCharacter.clan, this.discipline)

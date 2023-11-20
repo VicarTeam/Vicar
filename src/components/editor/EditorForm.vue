@@ -15,9 +15,10 @@
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
 import {Action, Mutation, State} from "vuex-class";
-import {AttributeKeys, ICharacter} from "@/types/models";
+import {AttributeKeys, ICharacter, ICharacterDirectory} from "@/types/models";
 import CharacterStorage from "@/libs/io/character-storage";
-import DataManager from "@/libs/data-manager";
+import DataManager from "@/libs/data/data-manager";
+import {EditorHistory} from "@/libs/editor-history";
 
 @Component({
   components: {}
@@ -45,47 +46,68 @@ export default class EditorForm extends Vue {
   @State("editorCharHistory")
   private editorCharHistory!: ICharacter[];
 
+  @State("directoryForCharCreation")
+  private directoryForCharCreation!: ICharacterDirectory|undefined;
+
   @Mutation("setEditingCharacter")
   private setEditingCharacter!: (character?: ICharacter) => void;
-
-  @Mutation("addCharToEditorHistory")
-  private addCharToEditorHistory!: (character: ICharacter) => void;
-
-  @Mutation("clearCharHistory")
-  private clearCharHistory!: () => void;
 
   @Mutation("setLevelMode")
   private setLevelMode!: (mode: boolean) => void;
 
-  @Action("popEditorCharHistory")
-  private popEditorCharHistory!: () => ICharacter;
+  @Mutation("setDirectoryForCharCreation")
+  private setDirectoryForCharCreation!: (dir?: ICharacterDirectory) => void;
 
   private next() {
     if (!this.editingCharacter || !this.canGoNext) {
       return;
     }
     if (!this.isFinish) {
-      this.$emit("before-next");
-      this.addCharToEditorHistory(this.fallbackHistoryChar ? this.fallbackHistoryChar : this.editingCharacter);
-      this.$router.push({name: this.nextStep});
+      const n = () => {
+        EditorHistory.push(!!this.fallbackHistoryChar ? this.fallbackHistoryChar : this.editingCharacter!);
+        this.$router.push({name: this.nextStep});
+      };
+      const event = {next: n, cancel: false};
+      this.$emit("before-next", event);
+      if (!event.cancel) {
+        n();
+      }
     } else {
-      this.editingCharacter.health = DataManager.getAttributeValue(this.editingCharacter, AttributeKeys.Stamina) + 3;
-      this.editingCharacter.willpower = DataManager.getAttributeValue(this.editingCharacter, AttributeKeys.Composure)
-          + DataManager.getAttributeValue(this.editingCharacter, AttributeKeys.Resolve);
-      CharacterStorage.addCharacter(this.editingCharacter);
-      this.setLevelMode(false);
-      this.clearCharHistory();
-      this.$router.push({name: 'viewer'});
+      const n = () => {
+        if (!this.editingCharacter) {
+          return;
+        }
+
+        if (this.directoryForCharCreation) {
+          this.editingCharacter.directory = this.directoryForCharCreation.id;
+        }
+
+        this.editingCharacter.requiredPointSpreads = [];
+        this.editingCharacter.health = DataManager.getAttributeValue(this.editingCharacter, AttributeKeys.Stamina) + 3;
+        this.editingCharacter.willpower = DataManager.getAttributeValue(this.editingCharacter, AttributeKeys.Composure)
+            + DataManager.getAttributeValue(this.editingCharacter, AttributeKeys.Resolve);
+        CharacterStorage.addCharacter(this.editingCharacter);
+        this.setLevelMode(false);
+        EditorHistory.clear();
+        this.setDirectoryForCharCreation();
+        this.$router.push({name: 'viewer'});
+      };
+      const event = {next: n, cancel: false};
+      this.$emit("before-next", event);
+      if (!event.cancel) {
+        n();
+      }
     }
   }
 
   private back() {
     if (!this.isCancel) {
-      this.popEditorCharHistory();
+      this.setEditingCharacter(EditorHistory.pop());
       this.$router.back();
     } else {
+      this.setDirectoryForCharCreation();
       this.setEditingCharacter();
-      this.clearCharHistory();
+      EditorHistory.clear();
       this.$router.push({name: 'main'});
     }
   }

@@ -6,6 +6,41 @@
     predatorTypes: number[];
 }
 
+export interface IBloodPotencyData {
+    value: number;
+    bleedingSpurt: number;
+    healedDamage: number;
+    disciplineBonus: number;
+    rouseRepeatDisciplineLevel: number;
+    baneLevel: number;
+    pray: string;
+}
+
+export interface IBloodRitual {
+    id: number;
+    level: number;
+    name: string;
+    description: string;
+    ingredients: string;
+    execution: string;
+    system: string;
+}
+
+export interface IOblivionCeremony {
+    id: number;
+    level: number;
+    name: string;
+    cost: string;
+    roll: string;
+    summary: string;
+    requires: number|undefined;
+    cult: string|undefined;
+    ingredients: string;
+    execution: string;
+    system: string;
+    duration: string|undefined;
+}
+
 export interface IEdition {
     languages: string[];
     books: IBook[];
@@ -19,23 +54,15 @@ export interface IClan {
     curse: string;
     disciplines: number[];
     actions?: IPTAction[];
+    symbol?: string;
 }
 
 export interface IDiscipline {
     id: number;
     name: string;
-    nicknames: string[];
     summary?: string;
-    properties: IDisciplineProperties;
     levels: { [key: number]: IDisciplineAbility[] };
     note?: string;
-}
-
-export interface IDisciplineProperties {
-    summary?: string;
-    type: "Geistig" | "Körperlich" | "Magie";
-    threat: string;
-    resonance: string;
 }
 
 export interface IRestrictionHolder {
@@ -52,6 +79,7 @@ export interface IDisciplineAbility {
     name: string;
     combination?: IDisciplineCombo;
     requirement?: number;
+    minBloodPotency?: number;
     summary: string;
     costs: string;
     diceSupplies?: string;
@@ -237,3 +265,11 @@ export const DefinedSpreadTypes: ISkillSpreadType[] = [
         ]
     }
 ];
+
+export interface IHomebrewClan extends IClan {
+    creator: string;
+}
+
+export interface IHomebrewDiscipline extends IDiscipline {
+    creator: string;
+}

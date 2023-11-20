@@ -6,33 +6,33 @@
 
     <Row style="width: 100%; border: 1px solid rgba(0, 0, 0, 0.5)">
       <Col style="width: 50%">
-        <Row style="border: 1px solid rgba(0, 0, 0, 0.5); font-size: 1.1rem; height: 2.5rem; padding-left: 1rem; padding-right: 1rem; align-items: center" v-for="a in getTransformedData(editingCharacter.merits, false)">
+        <Row style="border: 1px solid rgba(0, 0, 0, 0.5); font-size: 1.1rem; height: 2.5rem; padding-left: 1rem; padding-right: 1rem; align-items: center" v-for="(a, i) in getTransformedData(editingCharacter.merits, false)" :key="i">
           <span v-if="a.pack">
             <i style="color: #989898">{{$t('data.trait.merit')}}</i> - {{a.pack.name}}: {{a.name}}{{getTraitSuffix(a)}} - <i><b>{{$t('editor.traits.modal.trait.level')}}</b>: {{getTraitLevel(a)}}</i>
           </span>
         </Row>
-        <Row style="border: 1px solid rgba(0, 0, 0, 0.5); font-size: 1.1rem; height: 2.5rem; padding-left: 1rem; padding-right: 1rem; align-items: center" v-for="a in getTransformedData(editingCharacter.backgrounds, false)">
+        <Row style="border: 1px solid rgba(0, 0, 0, 0.5); font-size: 1.1rem; height: 2.5rem; padding-left: 1rem; padding-right: 1rem; align-items: center" v-for="(a, i) in getTransformedData(editingCharacter.backgrounds, false)" :key="i">
           <span v-if="a.pack">
             <i style="color: #989898">{{$t('data.trait.background')}}</i> - {{a.pack.name}}: {{a.name}}{{getTraitSuffix(a)}} - <i><b>{{$t('editor.traits.modal.trait.level')}}</b>: {{getTraitLevel(a)}}</i>
           </span>
         </Row>
-        <Row style="border: 1px solid rgba(0, 0, 0, 0.5); font-size: 1.1rem; height: 2.5rem; padding-left: 1rem; padding-right: 1rem; align-items: center" v-for="a in getTraitPlaceholders()">
+        <Row style="border: 1px solid rgba(0, 0, 0, 0.5); font-size: 1.1rem; height: 2.5rem; padding-left: 1rem; padding-right: 1rem; align-items: center" v-for="(a, i) in getTraitPlaceholders()" :key="i">
 
         </Row>
       </Col>
 
       <Col style="width: 50%">
-        <Row style="border: 1px solid rgba(0, 0, 0, 0.5); font-size: 1.1rem; height: 2.5rem; padding-left: 1rem; padding-right: 1rem; align-items: center" v-for="a in getTransformedData(editingCharacter.merits, true)">
+        <Row style="border: 1px solid rgba(0, 0, 0, 0.5); font-size: 1.1rem; height: 2.5rem; padding-left: 1rem; padding-right: 1rem; align-items: center" v-for="(a, i) in getTransformedData(editingCharacter.merits, true)" :key="i">
           <span v-if="a.pack">
             <i style="color: #989898">{{$t('data.trait.merit')}}</i> - {{a.pack.name}}: {{a.name}}{{getTraitSuffix(a)}} - <i><b>{{$t('editor.traits.modal.trait.level')}}</b>: {{getTraitLevel(a)}}</i>
           </span>
         </Row>
-        <Row style="border: 1px solid rgba(0, 0, 0, 0.5); font-size: 1.1rem; height: 2.5rem; padding-left: 1rem; padding-right: 1rem; align-items: center" v-for="a in getTransformedData(editingCharacter.backgrounds, true)">
+        <Row style="border: 1px solid rgba(0, 0, 0, 0.5); font-size: 1.1rem; height: 2.5rem; padding-left: 1rem; padding-right: 1rem; align-items: center" v-for="(a, i) in getTransformedData(editingCharacter.backgrounds, true)" :key="i">
           <span v-if="a.pack">
             <i style="color: #989898">{{$t('data.trait.background')}}</i> - {{a.pack.name}}: {{a.name}}{{getTraitSuffix(a)}} - <i><b>{{$t('editor.traits.modal.trait.level')}}</b>: {{getTraitLevel(a)}}</i>
           </span>
         </Row>
-        <Row style="border: 1px solid rgba(0, 0, 0, 0.5); font-size: 1.1rem; height: 2.5rem; padding-left: 1rem; padding-right: 1rem; align-items: center" v-for="a in getFlawPlaceholders()">
+        <Row style="border: 1px solid rgba(0, 0, 0, 0.5); font-size: 1.1rem; height: 2.5rem; padding-left: 1rem; padding-right: 1rem; align-items: center" v-for="(a, i) in getFlawPlaceholders()" :key="i">
 
         </Row>
       </Col>
@@ -66,16 +66,48 @@
     <Row style="width: 100%; margin-top: 1rem">
       <Col style="width: calc(100%/2)">
         <Row style="justify-content: center; text-align: center; color: var(--primary-color)">{{$t('character.backstory')}}</Row>
-        <Row style="width: 100%; height: 11.9cm; border: 2px solid rgba(0, 0, 0, 0.5); border-right-width: 1px; padding: 0.8rem; font-size: 1rem; overflow: hidden; text-overflow: ellipsis">
+        <Row style="width: 100%; height: 8cm; border: 2px solid rgba(0, 0, 0, 0.5); border-right-width: 1px; padding: 0.8rem; font-size: 1rem; overflow: hidden; text-overflow: ellipsis">
           {{editingCharacter.backstory}}
         </Row>
       </Col>
 
       <Col style="width: calc(100%/2)">
         <Row style="justify-content: center; text-align: center; color: var(--primary-color)">{{$t('character.notes')}}</Row>
-        <Row style="width: 100%; height: 11.9cm; border: 1px solid rgba(0, 0, 0, 0.5); border-top-width: 2px; border-bottom-width: 2px; padding: 0.8rem; font-size: 1rem; overflow: hidden; text-overflow: ellipsis">
+        <Row style="width: 100%; height: 8cm; border: 1px solid rgba(0, 0, 0, 0.5); border-top-width: 2px; border-bottom-width: 2px; padding: 0.8rem; font-size: 1rem; overflow: hidden; text-overflow: ellipsis">
           {{editingCharacter.notes}}
         </Row>
+      </Col>
+    </Row>
+
+    <Row class="botborder"></Row>
+
+    <Row style="width: 100%">
+      <Col style="width: calc(100%/3); justify-content: center; align-items: center">
+        <Row><b>{{$t('character.bloodpotency.spurt')}}</b>:</Row>
+        <Row><small>{{getBloodPotency().bleedingSpurt}} {{$t('character.dice')}}</small></Row>
+      </Col>
+      <Col style="width: calc(100%/3); justify-content: center; align-items: center">
+        <Row><b>{{$t('character.bloodpotency.healing')}}</b>:</Row>
+        <Row><small>{{getBloodPotency().healedDamage}} {{$t('character.simpledmg')}}</small></Row>
+      </Col>
+      <Col style="width: calc(100%/3); justify-content: center; align-items: center">
+        <Row><b>{{$t('character.bloodpotency.bonus')}}</b>:</Row>
+        <Row><small>{{getBloodPotency().disciplineBonus}} {{$t('character.dice')}}</small></Row>
+      </Col>
+    </Row>
+
+    <Row style="width: 100%; margin-top: 1rem">
+      <Col style="width: calc(100%/3); justify-content: center; align-items: center">
+        <Row><b>{{$t('character.bloodpotency.rouserepeat')}}</b>:</Row>
+        <Row><small>{{$t('character.bloodpotency.rouserepeat.val', {x: getBloodPotency().rouseRepeatDisciplineLevel})}}</small></Row>
+      </Col>
+      <Col style="width: calc(100%/3); justify-content: center; align-items: center">
+        <Row><b>{{$t('character.bloodpotency.banelevel')}}</b>:</Row>
+        <Row><small>{{getBloodPotency().baneLevel}}</small></Row>
+      </Col>
+      <Col style="width: calc(100%/3); justify-content: center; align-items: center">
+        <Row><b>{{$t('character.bloodpotency.pray')}}</b>:</Row>
+        <Row><small>{{getBloodPotency().pray}}</small></Row>
       </Col>
     </Row>
 
@@ -123,8 +155,9 @@ import Row from "@/components/viewer/pdf/Row.vue";
 import Col from "@/components/viewer/pdf/Col.vue";
 import {State} from "vuex-class";
 import {ICharacter, ILockableTrait, IUsingTraitPacks} from "@/types/models";
-import {ITraitPack} from "@/types/data";
+import {IBloodPotencyData, ITraitPack} from "@/types/data";
 import Dots from "@/components/progress/Dots.vue";
+import DataManager from "@/libs/data/data-manager";
 
 export interface ITransformedData extends ILockableTrait {
   pack: ITraitPack;
@@ -137,6 +170,10 @@ export default class SecondSheet extends Vue {
 
   @State("editingCharacter")
   private editingCharacter!: ICharacter;
+
+  private getBloodPotency(): IBloodPotencyData {
+    return DataManager.selectedLanguage.bloodPotencyTable.find(x => x.value === this.editingCharacter.bloodPotency)!;
+  }
 
   private getTraitPlaceholders() {
     const count = Math.max(0, 10 - this.getTransformedData(this.editingCharacter.merits, false).length - this.getTransformedData(this.editingCharacter.backgrounds, false).length);

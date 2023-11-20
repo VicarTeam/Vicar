@@ -18,9 +18,14 @@
               <div class="desc">{{editingCharacter.clan.description}}</div>
 
               <h6 style="font-weight: bolder; margin: 1rem 0 0;">{{$t('editor.clan.disciplines')}}:</h6>
-              <div class="disciplines">
+              <div class="disciplines" v-if="editingCharacter.clan.disciplines.length < 11">
                 <div class="discipline" v-for="d in editingCharacter.clan.disciplines" :key="d.id">
                   {{d.name}} <TipButton :content="d.summary"/>
+                </div>
+              </div>
+              <div class="disciplines" v-else>
+                <div class="discipline">
+                  {{$t('data.disciplines.all')}}
                 </div>
               </div>
             </div>
@@ -42,7 +47,7 @@
 import {Component, Inject, Vue} from "vue-property-decorator";
 import TipButton from "@/components/editor/TipButton.vue";
 import {ICharacter, IClan} from "@/types/models";
-import DataManager from "@/libs/data-manager";
+import DataManager from "@/libs/data/data-manager";
 import {Mutation, State} from "vuex-class";
 import EditorForm from "@/components/editor/EditorForm.vue";
 import Bullet from "@/components/Bullet.vue";
@@ -67,6 +72,10 @@ export default class EditorClanView extends Vue {
   }
 
   private getClanSymbol(clan: IClan) {
+    if (clan.symbol) {
+      return clan.symbol;
+    }
+
     const images = require.context('@/assets/img/clans', false, /\.png$/)
     return images(`./${clan.id}.png`);
   }
@@ -81,7 +90,7 @@ export default class EditorClanView extends Vue {
       books = books.filter(b => this.editingCharacter!.books.includes(b.id));
     }
 
-    return books.map(book => book.clans).flat().sort((a, b) => a.name.localeCompare(b.name));
+    return books.map(book => book.clans).flat().filter(b => b.id >= 0).sort((a, b) => a.name.localeCompare(b.name));
   }
 
   @Inject("show-tip")

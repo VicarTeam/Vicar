@@ -4,7 +4,7 @@
       <div class="discipline card" v-for="d in editingCharacter.disciplines">
         <div class="top">
           <div class="d-flex align-items-center" style="gap: 0.5rem; flex-grow: 1">
-            <LevelButton v-if="d.currentLevel - 1 < 5" @click="levelDiscipline(d)"/>
+            <LevelButton v-if="d.currentLevel - 1 < getMaxDisciplineLevel(d)" @click="levelDiscipline(d)"/>
             <b>{{d.discipline.name}}</b>
             <TipButton :content="d.discipline.summary"/>
           </div>
@@ -12,6 +12,7 @@
         </div>
         <div class="abilities">
           <div class="ability" v-for="a in d.abilities">
+            <i class="iconbtnprim fa-solid fa-xmark" v-if="editingCharacter.fullCustomization" @click="deleteDisciplineAbility(d, a)"></i>
             <small class="name">{{a.name}} - <i><b>{{$t('editor.disciplines.level')}}</b>: {{a.level}}</i></small>
             <TipButton class="tip" :override="true" @click="abilityInfoModal.showModal(a, d.discipline)"/>
           </div>
@@ -26,25 +27,29 @@
     <DisciplineAbilityInfoModal ref="abilityInfoModal"/>
     <ChooseDisciplineAbilityModal ref="chooseAbilityModal"/>
     <NewDisciplineModal ref="newDisciplineModal"/>
+    <ConfirmDeleteModal ref="confirmDeleteModal"/>
   </div>
 </template>
 
 <script lang="ts">
 import {Component, Ref, Vue} from "vue-property-decorator";
 import {State} from "vuex-class";
-import {ICharacter, IDisciplineSelection} from "@/types/models";
+import {ICharacter, IDisciplineSelection, ILeveledDisciplineAbility} from "@/types/models";
 import TipButton from "@/components/editor/TipButton.vue";
 import Dots from "@/components/progress/Dots.vue";
 import DisciplineAbilityInfoModal from "@/components/viewer/modals/DisciplineAbilityInfoModal.vue";
 import ChooseDisciplineAbilityModal from "@/components/editor/modals/ChooseDisciplineAbilityModal.vue";
 import LevelButton from "@/components/viewer/LevelButton.vue";
 import {levelResolver} from "@/libs/resolvers/level-resolver";
-import DataManager from "@/libs/data-manager";
+import DataManager from "@/libs/data/data-manager";
 import CharacterStorage from "@/libs/io/character-storage";
 import NewDisciplineModal from "@/components/viewer/modals/leveling/NewDisciplineModal.vue";
+import ConfirmDeleteModal from "@/components/viewer/modals/ConfirmDeleteModal.vue";
+import {IDisciplineAbility} from "@/types/data";
 
 @Component({
   components: {
+    ConfirmDeleteModal,
     NewDisciplineModal,
     LevelButton, ChooseDisciplineAbilityModal, DisciplineAbilityInfoModal, Dots, TipButton}
 })
@@ -65,15 +70,65 @@ export default class DisciplinesView extends Vue {
   @Ref("newDisciplineModal")
   private newDisciplineModal!: NewDisciplineModal;
 
+  @Ref("confirmDeleteModal")
+  private confirmDeleteModal!: ConfirmDeleteModal;
+
+  private deleteDisciplineAbility(selection: IDisciplineSelection, ability: IDisciplineAbility) {
+    this.confirmDeleteModal.showModal(selection.discipline.name + " " + (selection.currentLevel - 1) + " - " + ability.name, () => {
+      selection.abilities = selection.abilities.filter(a => a.id !== ability.id);
+      selection.currentLevel--;
+
+      if (selection.abilities.length <= 0) {
+        this.editingCharacter.disciplines = this.editingCharacter.disciplines.filter(d => d.discipline.id !== selection.discipline.id);
+      }
+
+      CharacterStorage.saveCharacter(this.editingCharacter);
+    });
+  }
+
   private levelDiscipline(selection: IDisciplineSelection) {
-    const costs = (DataManager.isClanDiscipline(this.editingCharacter.clan, selection.discipline)
-        ? levelResolver.resolveClanDiscipline : levelResolver.resolveOtherDiscipline)(this.editingCharacter, selection);
+    const costs = this.getLevelCost(selection);
     this.chooseAbilityModal.showModal(selection, ability => {
       selection.abilities.push({...ability, usedLevel: selection.currentLevel});
       selection.currentLevel++;
+      selection.abilities = this.sortedDisciplineAbilities(selection.abilities);
+      this.editingCharacter.usedExp = (this.editingCharacter.usedExp || 0) + costs;
       this.editingCharacter.exp -= costs;
+      this.editingCharacter.disciplines = this.sortedDisciplines;
       CharacterStorage.saveCharacter(this.editingCharacter);
     }, costs);
+  }
+
+  private getLevelCost(selection: IDisciplineSelection): number {
+    if (this.editingCharacter.clan.id === 15) {
+      return levelResolver.resolveCaitiffDiscipline(this.editingCharacter, selection);
+    }
+
+    return (DataManager.isClanDiscipline(this.editingCharacter.clan, selection.discipline)
+        ? levelResolver.resolveClanDiscipline : levelResolver.resolveOtherDiscipline)(this.editingCharacter, selection);
+  }
+
+  private getMaxDisciplineLevel(selection: IDisciplineSelection) {
+    if (this.editingCharacter.allowLearningOfAllPowers) {
+      return Infinity;
+    }
+    return this.editingCharacter.useAdavancedDisciplines ? 10 : 5;
+  }
+
+  private sortedDisciplineAbilities(abilities: ILeveledDisciplineAbility[]) {
+    return abilities.sort((a, b) => {
+      return a.level - b.level;
+    });
+  }
+
+  private get sortedDisciplines(): IDisciplineSelection[] {
+    if (!this.editingCharacter) {
+      return [];
+    }
+
+    return this.editingCharacter.disciplines.sort((a, b) => {
+      return b.currentLevel - a.currentLevel;
+    });
   }
 }
 </script>
@@ -93,7 +148,10 @@ export default class DisciplinesView extends Vue {
     gap: 2rem;
     flex-wrap: wrap;
     align-content: flex-start;
+    padding-left: 2rem;
+    padding-right: 2rem;
     .discipline {
+      margin: auto;
       width: 30rem;
       display: flex;
       flex-direction: column;

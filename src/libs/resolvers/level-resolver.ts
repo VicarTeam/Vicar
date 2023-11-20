@@ -1,5 +1,5 @@
 import {AttributeKeys, ICharacter, IDisciplineSelection, LevelType, SkillKeys} from "@/types/models";
-import DataManager from "@/libs/data-manager";
+import DataManager from "@/libs/data/data-manager";
 
 type ResolverCallback = (char: ICharacter, data: any) => number;
 const registeredResolvers: {[type: number]: ResolverCallback} = {};
@@ -51,6 +51,11 @@ class LevelResolver {
     @ResolveType(LevelType.OtherDiscipline)
     public resolveOtherDiscipline(char: ICharacter, disc: IDisciplineSelection): number {
         return disc.currentLevel * 7;
+    }
+
+    @ResolveType(LevelType.CaitiffDiscipline)
+    public resolveCaitiffDiscipline(char: ICharacter, disc: IDisciplineSelection): number {
+        return disc.currentLevel * 6;
     }
 
     @ResolveType(LevelType.BloodPotency)

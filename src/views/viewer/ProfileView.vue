@@ -2,8 +2,8 @@
   <div class="profile-view">
     <input type="file" ref="avatarUploader" @change="onAvatarUpload" accept="image/png, image/gif, image/jpeg" hidden/>
     <div class="meta">
-      <Avatar :src="editingCharacter.avatar" style="width: 12rem; height: 12rem; cursor: pointer; flex-shrink: 0"
-              @click="avatarUploader.click()"/>
+      <Avatar :src="editingCharacter.avatar" style="width: 12rem; height: 12rem; cursor: pointer; flex-shrink: 0" :draggable="true"
+              @click="changeAvatar($event)"/>
       <div class="info">
         <div class="name" v-if="!isEditName">
           {{ editingCharacter.name }}
@@ -34,17 +34,16 @@
         <div class="row">
           <div class="stat" style="margin-right: 5rem">
             <b>{{ $t('character.sire') }}:</b>
-            <small>{{ editingCharacter.sire }}</small>
+            <small v-if="!editingCharacter.fullCustomization">{{ editingCharacter.sire }}</small>
+            <input v-else class="form-control" type="text" v-model="editingCharacter.sire"/>
           </div>
           <div class="stat">
             <b>{{ $t('character.health') }}:</b>
-            <Squares :max="10" :amount="editingCharacter.health" :margin-at="6"
-                     @click="v => editingCharacter.health = v === editingCharacter.health ? 0 : v"/>
+            <Damage prop-key="health"/>
           </div>
           <div class="stat">
             <b>{{ $t('character.willpower') }}:</b>
-            <Squares :max="10" :amount="editingCharacter.willpower" :margin-at="6"
-                     @click="v => editingCharacter.willpower = v === editingCharacter.willpower ? 0 : v"/>
+            <Damage prop-key="willpower"/>
           </div>
         </div>
         <div class="row">
@@ -54,13 +53,12 @@
           </div>
           <div class="stat">
             <b>{{ $t('character.humanity') }}:</b>
-            <Squares :max="10" :amount="editingCharacter.humanity" :margin-at="6"
-                     @click="v => editingCharacter.humanity = v === editingCharacter.humanity ? 0 : v"/>
+            <Humanity/>
           </div>
           <div class="stat">
             <b>{{ $t('character.hunger') }}:</b>
             <Squares :max="5" :amount="editingCharacter.hunger"
-                     @click="v => editingCharacter.hunger = v === editingCharacter.hunger ? 0 : v"/>
+                     @click="v => {editingCharacter.hunger = v === editingCharacter.hunger ? 0 : v; saveChar(true);}"/>
           </div>
         </div>
       </div>
@@ -71,47 +69,80 @@
       <div class="column">
         <div class="form-group">
           <label>{{ $t('character.chronicle') }}: <TipButton :content="$t('character.chronicle.tip')"/></label>
-          <input class="form-control" type="text" v-model="editingCharacter.chronicle"/>
+          <input class="form-control" type="text" v-model="editingCharacter.chronicle" @input="saveChar"/>
         </div>
 
         <div class="form-group">
           <label>{{$t('character.chronicleprinciples')}}: <TipButton :content="$t('character.chronicleprinciples.tip')"/></label>
-          <textarea class="form-control" v-model="editingCharacter.chroniclePrinciples"/>
+          <textarea class="form-control" v-model="editingCharacter.chroniclePrinciples" @input="saveChar"/>
         </div>
       </div>
       <div class="column">
         <div class="form-group">
           <label>{{ $t('character.concept') }}: <TipButton :content="$t('character.concept.tip')"/></label>
-          <input class="form-control" type="text" v-model="editingCharacter.concept"/>
+          <input class="form-control" type="text" v-model="editingCharacter.concept" @input="saveChar"/>
         </div>
 
         <div class="form-group">
           <label>{{$t('character.anchorsandbeliefs')}}: <TipButton :content="$t('character.anchorsandbeliefs.tip')"/></label>
-          <textarea class="form-control" v-model="editingCharacter.anchorsAndBeliefs"/>
+          <textarea class="form-control" v-model="editingCharacter.anchorsAndBeliefs" @input="saveChar"/>
         </div>
       </div>
       <div class="column">
         <div class="form-group">
           <label>{{ $t('character.ambition') }}: <TipButton :content="$t('character.ambition.tip')"/></label>
-          <input class="form-control" type="text" v-model="editingCharacter.ambition"/>
+          <input class="form-control" type="text" v-model="editingCharacter.ambition" @input="saveChar"/>
         </div>
 
         <div class="form-group">
           <label>{{$t('character.backstory')}}:</label>
-          <textarea class="form-control" v-model="editingCharacter.backstory"/>
+          <textarea class="form-control" v-model="editingCharacter.backstory" @input="saveChar"/>
         </div>
       </div>
       <div class="column">
         <div class="form-group">
           <label>{{ $t('character.desire') }}: <TipButton :content="$t('character.desire.tip')"/></label>
-          <input class="form-control" type="text" v-model="editingCharacter.desire"/>
+          <input class="form-control" type="text" v-model="editingCharacter.desire" @input="saveChar"/>
         </div>
 
         <div class="form-group">
           <label>{{$t('character.notes')}}:</label>
-          <textarea class="form-control" v-model="editingCharacter.notes"/>
+          <textarea class="form-control" v-model="editingCharacter.notes" @input="saveChar"/>
         </div>
       </div>
+    </div>
+    <Tabs/>
+
+    <div style="width: 100%; padding: 2rem; flex-direction: column; justify-content: center; align-items: center">
+      <Row style="width: 100%">
+        <Col style="width: calc(100%/3); justify-content: center; align-items: center">
+          <Row><b>{{$t('character.bloodpotency.spurt')}}</b>: <TipButton :content="$t('character.bloodpotency.spurt.desc')"/></Row>
+          <Row><small>{{getBloodPotency().bleedingSpurt}} {{$t('character.dice')}}</small></Row>
+        </Col>
+        <Col style="width: calc(100%/3); justify-content: center; align-items: center">
+          <Row><b>{{$t('character.bloodpotency.healing')}}</b>: <TipButton :content="$t('character.bloodpotency.healing.desc')"/></Row>
+          <Row><small>{{getBloodPotency().healedDamage}} {{$t('character.simpledmg')}}</small></Row>
+        </Col>
+        <Col style="width: calc(100%/3); justify-content: center; align-items: center">
+          <Row><b>{{$t('character.bloodpotency.bonus')}}</b>: <TipButton :content="$t('character.bloodpotency.bonus.desc')"/></Row>
+          <Row><small>{{getBloodPotency().disciplineBonus}} {{$t('character.dice')}}</small></Row>
+        </Col>
+      </Row>
+
+      <Row style="width: 100%; margin-top: 1rem">
+        <Col style="width: calc(100%/3); justify-content: center; align-items: center">
+          <Row><b>{{$t('character.bloodpotency.rouserepeat')}}</b>: <TipButton :content="$t('character.bloodpotency.rouserepeat.desc')"/></Row>
+          <Row><small>{{$t('character.bloodpotency.rouserepeat.val', {x: getBloodPotency().rouseRepeatDisciplineLevel})}}</small></Row>
+        </Col>
+        <Col style="width: calc(100%/3); justify-content: center; align-items: center">
+          <Row><b>{{$t('character.bloodpotency.banelevel')}}</b>:</Row>
+          <Row><small>{{getBloodPotency().baneLevel}}</small></Row>
+        </Col>
+        <Col style="width: calc(100%/3); justify-content: center; align-items: center">
+          <Row><b>{{$t('character.bloodpotency.pray')}}</b>:</Row>
+          <Row><small>{{getBloodPotency().pray}}</small></Row>
+        </Col>
+      </Row>
     </div>
 
     <BloodPotencyModal ref="levelBloodPotencyModal"/>
@@ -131,9 +162,19 @@ import Tab from "@/components/tabs/Tab.vue";
 import TipButton from "@/components/editor/TipButton.vue";
 import LevelButton from "@/components/viewer/LevelButton.vue";
 import BloodPotencyModal from "@/components/viewer/modals/leveling/BloodPotencyModal.vue";
+import {IBloodPotencyData} from "@/types/data";
+import DataManager from "@/libs/data/data-manager";
+import Col from "@/components/viewer/pdf/Col.vue";
+import Row from "@/components/viewer/pdf/Row.vue";
+import Humanity from "@/components/progress/tracker/Humanity.vue";
+import Damage from "@/components/progress/tracker/Damage.vue";
+import CharacterStorage from "@/libs/io/character-storage";
 
 @Component({
-  components: {BloodPotencyModal, LevelButton, TipButton, Tab, Tabs, Squares, IconButton, Bullet, Avatar}
+  components: {
+    Damage,
+    Humanity,
+    BloodPotencyModal, LevelButton, TipButton, Tab, Tabs, Squares, IconButton, Bullet, Avatar, Row, Col}
 })
 export default class ProfileView extends Vue {
 
@@ -151,6 +192,14 @@ export default class ProfileView extends Vue {
 
   LevelType = LevelType;
 
+  private saveChar(triggerSync: boolean = false) {
+    CharacterStorage.saveCharacter(this.editingCharacter, triggerSync);
+  }
+
+  private getBloodPotency(): IBloodPotencyData {
+    return DataManager.selectedLanguage.bloodPotencyTable.find(x => x.value === this.editingCharacter.bloodPotency)!;
+  }
+
   private onAvatarUpload(e: Event) {
     //@ts-ignore
     const file = (e.target as HTMLInputElement).files[0];
@@ -162,6 +211,12 @@ export default class ProfileView extends Vue {
         this.$forceUpdate();
       };
       reader.readAsDataURL(file);
+    }
+  }
+
+  private changeAvatar(e: MouseEvent) {
+    if (!e.shiftKey) {
+      this.avatarUploader.click();
     }
   }
 
