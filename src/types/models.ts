@@ -78,7 +78,8 @@ export enum Generation {
     Children = "children",
     Newborn = "newborn",
     Ancillae = "ancillae",
-    Older = "older"
+    Older = "older",
+    Elder = "elder",
 }
 
 export enum DamageType {
@@ -211,7 +212,7 @@ export interface ICharacterDirectory {
     open: boolean;
 }
 
-export const CurrentCharacterVersion = 1;
+export const CurrentCharacterVersion = 2;
 
 export interface ICharacter {
     directory?: string;
@@ -258,6 +259,7 @@ export interface ICharacter {
     inventory: IInventory;
     usedExp: number;
     connectedFoundryId?: string;
+    isElder?: boolean;
 }
 
 export interface ICategory {
